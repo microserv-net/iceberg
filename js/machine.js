@@ -173,7 +173,7 @@ export class Machine extends Emitter {
     const parts = [
       'rw', 'root=host9p', 'rootfstype=9p',
       'rootflags=trans=virtio,cache=loose', 'modules=virtio_pci',
-      'console=ttyS0', 'tsc=reliable', 'quiet',
+      'console=ttyS0,115200', 'earlyprintk=serial,ttyS0,115200', 'tsc=reliable',
     ];
     return parts.join(' ');
   }
