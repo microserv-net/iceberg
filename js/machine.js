@@ -58,11 +58,7 @@ export class Machine extends Emitter {
 
   async #loadV86() {
     if (this.#v86) return this.#v86;
-    try {
-      const mod = await import(/* @vite-ignore */ MACHINE.libPath);
-      this.#v86 = mod.V86 ?? mod.default?.V86 ?? window.V86;
-    } catch {
-      // Older builds ship a classic script that assigns window.V86.
+    if (MACHINE.libPath.endsWith('.js')) {
       await new Promise((res, rej) => {
         const s = document.createElement('script');
         s.src = MACHINE.libPath.replace(/\.mjs$/, '.js');
@@ -70,6 +66,20 @@ export class Machine extends Emitter {
         document.head.append(s);
       });
       this.#v86 = window.V86;
+    } else {
+      try {
+        const mod = await import(/* @vite-ignore */ MACHINE.libPath);
+        this.#v86 = mod.V86 ?? mod.default?.V86 ?? window.V86;
+      } catch {
+        // Older builds ship a classic script that assigns window.V86.
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = MACHINE.libPath.replace(/\.mjs$/, '.js');
+          s.onload = res; s.onerror = () => rej(new Error('Could not load the emulator.'));
+          document.head.append(s);
+        });
+        this.#v86 = window.V86;
+      }
     }
     if (!this.#v86) {
       throw new Error(

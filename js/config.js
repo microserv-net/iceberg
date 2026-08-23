@@ -45,7 +45,7 @@ export const MACHINE = {
   vgaMemoryMB: 8,
   cpuCores: 1,
   wasmPath: new URL('../vendor/v86.wasm', import.meta.url).href,
-  libPath: new URL('../vendor/libv86.mjs', import.meta.url).href,
+  libPath: new URL('../vendor/libv86.js', import.meta.url).href,
   /* Awash → Awash (run loop parked) → Submerged (image written, emulator torn down) */
   awashAfterMs: 45_000,
   submergedAfterMs: 8 * 60_000,
