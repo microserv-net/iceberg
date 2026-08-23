@@ -23,6 +23,7 @@ export const vault = new Emitter();
 export const repo = {
   owner: null,
   name: APP.vaultRepo,
+  branch: 'main',      // resolved from the repository, NOT assumed
   head: null,          // commit sha we believe is current
   tree: null,          // its root tree sha
   ready: false,
@@ -95,10 +96,18 @@ export async function ensureVault(login, { onStep } = {}) {
   repo.private = true;
   repo.sizeKB = r.size ?? null;
 
-  if ((r.default_branch || 'main') !== 'main') {
-    step('branch', 'Renaming the default branch to main');
-    await gh.post(`/repos/${login}/${APP.vaultRepo}/branches/${r.default_branch}/rename`, { new_name: 'main' })
-      .catch(() => { /* not fatal: refresh() reads whatever the default actually is */ });
+  // Whatever this repository calls its default branch is what Iceberg writes to.
+  // Accounts configured with `master`, or vaults made by hand, work unchanged.
+  repo.branch = r.default_branch || 'main';
+
+  if (repo.branch !== 'main') {
+    step('branch', `Renaming the default branch from ${repo.branch} to main`);
+    const renamed = await gh
+      .post(`/repos/${login}/${APP.vaultRepo}/branches/${repo.branch}/rename`, { new_name: 'main' })
+      .catch(() => null);
+    // Cosmetic, not required. If it fails we keep using the existing name rather
+    // than writing to a branch that is not there.
+    if (renamed) repo.branch = 'main';
   }
 
   await refresh();
@@ -175,8 +184,24 @@ async function seed() {
 /* ------------------------------------------------------------------ */
 
 export async function refresh() {
-  const ref = await gh.getRef(repo.owner, repo.name, 'heads/main');
+  let ref = await gh.getRef(repo.owner, repo.name, `heads/${repo.branch}`);
+
+  // The branch we expected is not there. Rather than failing every write with a
+  // 422 forever, find out what the repository actually calls its default branch
+  // and follow that. An account whose default is `master`, or a vault made by
+  // hand, is then indistinguishable from any other.
   if (!ref) {
+    const r = await gh.maybe(`/repos/${repo.owner}/${repo.name}`);
+    const actual = r?.default_branch;
+    if (actual && actual !== repo.branch) {
+      ref = await gh.getRef(repo.owner, repo.name, `heads/${actual}`);
+      if (ref) repo.branch = actual;
+    }
+  }
+
+  if (!ref) {
+    // No branch at all: an empty repository. The first commit will be a root
+    // commit and will create the ref rather than update it.
     repo.head = null; repo.tree = null;
     return null;
   }
@@ -186,16 +211,16 @@ export async function refresh() {
   return repo.head;
 }
 
-/** True if GitHub's main has moved since we last looked — another device. */
+/** True if the vault's branch has moved since we last looked — another device. */
 export async function movedElsewhere() {
   const before = repo.head;
-  const ref = await gh.getRef(repo.owner, repo.name, 'heads/main');
+  const ref = await gh.getRef(repo.owner, repo.name, `heads/${repo.branch}`);
   return !!(ref && before && ref.object.sha !== before);
 }
 
 export async function readText(p) {
   try {
-    const r = await gh.getContentRaw(repo.owner, repo.name, path(p), 'main');
+    const r = await gh.getContentRaw(repo.owner, repo.name, path(p), repo.branch);
     if (r.notModified) return undefined;         // caller keeps its cached copy
     return typeof r.data === 'string' ? r.data : dec.decode(r.data);
   } catch (e) {
@@ -257,16 +282,35 @@ export async function commit({ message, files = [], blobs = [], deletes = [], tr
     });
 
     try {
-      await gh.updateRef(repo.owner, repo.name, 'heads/main', c.sha, false);
+      const ref = `heads/${repo.branch}`;
+      // An empty repository has no branch to move, so the first write creates
+      // one. PATCHing a ref that does not exist is a 422, and retrying it is a
+      // 422 five more times.
+      if (parent) await gh.updateRef(repo.owner, repo.name, ref, c.sha, false);
+      else await gh.createRef(repo.owner, repo.name, ref, c.sha);
+
       repo.head = c.sha;
       repo.tree = treeSha;
       vault.emit('commit', { sha: c.sha, message });
       return { head: c.sha, tree: treeSha };
     } catch (e) {
-      const raced = e.status === 422 || e.status === 409;
-      if (!raced || attempt === tries - 1) throw e;
-      vault.emit('raced', { attempt });
-      await refresh();                       // someone else moved main; rebuild on it
+      // 422 covers three different situations and they need three answers.
+      const why = String(e.body?.message ?? e.message ?? '');
+      const missing = /does not exist|Not Found/i.test(why);
+      const exists = /already exists/i.test(why);
+      const raced = e.status === 409 || /fast forward/i.test(why);
+
+      if (!(missing || exists || raced) || attempt === tries - 1) {
+        // Anything else is a real failure. Say so once instead of hammering it.
+        if (e.status === 422) {
+          e.message = `The vault refused the write on branch '${repo.branch}': ${why || 'unprocessable'}. ` +
+            `Nothing was applied.`;
+        }
+        throw e;
+      }
+
+      vault.emit('raced', { attempt, why });
+      await refresh();                       // re-read the branch and rebuild on it
       await sleep(300 * (attempt + 1) * (0.5 + Math.random()));
     }
   }
