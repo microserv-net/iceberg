@@ -81,15 +81,22 @@ async function pipe(bytes, stream) {
   return new Uint8Array(await new Response(rs).arrayBuffer());
 }
 
-export const hasCompression = typeof CompressionStream !== 'undefined';
+export const hasCompression = (() => {
+  if (typeof CompressionStream === 'undefined' || typeof DecompressionStream === 'undefined') return false;
+  try {
+    new CompressionStream('deflate-raw');
+    new DecompressionStream('deflate-raw');
+    return true;
+  } catch { return false; }
+})();
 
 export async function deflate(bytes) {
-  if (!hasCompression) return bytes;
+  if (!hasCompression) throw new Error('This browser does not support raw-DEFLATE compression. Use a current Chrome, Firefox, or Safari.');
   return pipe(bytes, new CompressionStream('deflate-raw'));
 }
 
 export async function inflate(bytes) {
-  if (!hasCompression) return bytes;
+  if (!hasCompression) throw new Error('This browser does not support raw-DEFLATE decompression. Use a current Chrome, Firefox, or Safari.');
   return pipe(bytes, new DecompressionStream('deflate-raw'));
 }
 
