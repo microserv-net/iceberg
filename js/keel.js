@@ -93,7 +93,11 @@ const inflight = new Map();
 
 export async function getChunk(hash, { imageId = null, signal } = {}) {
   const cached = await idb.get('cache', `c:${hash}`);
-  if (cached) return new Uint8Array(cached);
+  if (cached) {
+    const bytes = new Uint8Array(cached);
+    if (await sha256(bytes) === hash) return bytes;
+    await idb.del('cache', `c:${hash}`).catch(() => {});
+  }
 
   if (inflight.has(hash)) return inflight.get(hash);
 
