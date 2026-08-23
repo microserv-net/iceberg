@@ -14,6 +14,7 @@ export class FileTree {
   #host;
   #open = new Set(['/', '/root']);
   #drift = new Set();
+  #start = '/root';     // the directory the tree opens at
   onOpen = null;
 
   constructor(fs, { start = '/root' } = {}) { this.#fs = fs; this.#start = start; }

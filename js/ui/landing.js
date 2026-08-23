@@ -262,7 +262,7 @@ function revealStrata() {
 }
 
 function bindRail() {
-  const section = document.getElementById('core');
+  const section = document.getElementById('depth');
   const el = document.getElementById('depth-svg');
   if (!section || !el) return;
   let rail = buildRail(el, section);

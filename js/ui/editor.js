@@ -43,6 +43,7 @@ export class Editor {
   #host;
   #title;
   #saveBtn;
+  #lib = null;          // CodeMirror, imported on first open
 
   constructor(fs, { onRun } = {}) { this.#fs = fs; this.#onRun = onRun; }
 

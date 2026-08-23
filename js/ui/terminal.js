@@ -37,6 +37,8 @@ export class Terminal {
   #history = [];
   #line = '';
   #ctrl = false;
+  #strip = null;        // the history chip row (mobile)
+  #railNode = null;     // the key rail (mobile)
 
   constructor(machine) { this.#machine = machine; }
 
