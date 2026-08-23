@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iceberg — your computer, calved in Git</title>
+<meta name="description" content="A real Linux machine that runs in your browser and lives in your own private GitHub repository. Calve it as a named state. Thaw it on any device, including your phone.">
+<meta name="theme-color" content="#04070c">
+<meta property="og:title" content="Iceberg">
+<meta property="og:description" content="Your development machine, calved in Git and thawed anywhere.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9v14L16 30 3 23V9z' fill='none' stroke='%237fe3ff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles/core.css">
+<link rel="stylesheet" href="styles/landing.css">
+</head>
+<body class="grain">
+
+<a class="sr" href="#depth">Skip to the explanation</a>
+
+<header class="topbar" id="topbar">
+  <a class="wordmark" href="./" aria-label="Iceberg home">
+    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" class="mark">
+      <path d="M16 2 29 9v14L16 30 3 23V9z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M16 2v28M3 9l13 7 13-7" fill="none" stroke="currentColor" stroke-width="1" opacity=".45"/>
+    </svg>
+    <span>ICEBERG</span>
+  </a>
+  <nav>
+    <a href="docs.html">Manual</a>
+    <a href="https://github.com/microserv-net/iceberg-web" rel="noopener">Source</a>
+    <a class="btn btn--cold btn--sm" href="machine.html">Open the machine</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ────────────────────────────  hero  ──────────────────────────── -->
+  <section class="hero" id="hero">
+    <div class="hero__inner">
+      <p class="eyebrow">Nine tenths of it is below the waterline</p>
+      <h1 class="hero__title" id="wordmark">ICEBERG</h1>
+      <p class="hero__lede">
+        A real Linux machine that runs inside your browser and lives inside your own
+        private GitHub repository. Calve it as a named state. Thaw it on any device
+        you can open a browser on — including the phone in your pocket.
+      </p>
+      <div class="hero__cta">
+        <a class="btn btn--cold" href="machine.html">Thaw a machine</a>
+        <a class="btn" href="#depth">How it works</a>
+      </div>
+      <p class="hero__foot mono">
+        No servers of ours. No account with us. Your GitHub, your repository, your machine.
+      </p>
+    </div>
+
+    <div class="hero__berg" aria-hidden="true">
+      <svg id="hero-berg" viewBox="0 0 220 620" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <div class="scroll-hint mono" aria-hidden="true">
+      <span>descend</span>
+      <svg width="12" height="26" viewBox="0 0 12 26"><path d="M6 0v22M1 17l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────  below the line  ─────────────────── -->
+  <section class="depth-section" id="depth">
+    <div class="depth-rail" aria-hidden="true">
+      <svg id="depth-svg" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="depth-copy">
+
+      <article class="stratum" data-depth="0">
+        <p class="eyebrow">The problem</p>
+        <h2>Your environment is the part you cannot carry.</h2>
+        <p class="tight">
+          The code is already portable — it has been for twenty years. What is not portable
+          is everything around it: the toolchain versions, the twelve things you apt-got at
+          2am, the shell you spent an evening configuring, the one patched binary you can
+          no longer remember installing.
+        </p>
+        <p class="tight">
+          Lose the laptop and you do not lose the code. You lose the machine that understood it.
+        </p>
+      </article>
+
+      <article class="stratum" data-depth="1">
+        <p class="eyebrow">The idea</p>
+        <h2>Store the machine, not a description of&nbsp;it.</h2>
+        <p class="tight">
+          Iceberg runs an actual Alpine Linux system in your browser — a real kernel, real
+          processes, a real package manager, a real filesystem — and stores its saved states in
+          a private repository on your own GitHub account.
+        </p>
+        <p class="tight">
+          Not a container recipe that rebuilds something similar. The machine itself, as it was,
+          down to the file.
+        </p>
+        <div class="ledger" role="table" aria-label="What lives where">
+          <div role="row"><span role="cell" class="mono">GitHub</span><span role="cell">identity · storage · history · sync between devices</span></div>
+          <div role="row"><span role="cell" class="mono">Browser</span><span role="cell">the processor · memory · disk · terminal · editor</span></div>
+          <div role="row"><span role="cell" class="mono">Us</span><span role="cell">a static page. Nothing else. There is no server to be down.</span></div>
+        </div>
+      </article>
+
+      <article class="stratum" data-depth="2">
+        <p class="eyebrow">The distinction everything rests on</p>
+        <h2>A floe is what you saved. A session is what you're&nbsp;using.</h2>
+        <div class="dyad">
+          <div class="dyad__side dyad__side--cold panel">
+            <p class="pill" data-tone="cold">Floe</p>
+            <p>Immutable. Named. A commit, though you never have to know that.</p>
+            <p class="mono small">Rust Dev · 3 days ago · 41 210 files</p>
+          </div>
+          <div class="dyad__side dyad__side--warm panel">
+            <p class="pill" data-tone="warm">Session</p>
+            <p>Live, warm, and entirely yours to wreck. It exists in this tab and nowhere else.</p>
+            <p class="mono small">Rust Dev — this session · 34 files of drift</p>
+          </div>
+        </div>
+        <p class="tight emphasis">
+          Nothing inside a running machine is ever written to GitHub on its own. No autosave,
+          no background commit, no quiet sync. You install four hundred packages, break the
+          kernel, and change your mind — and the floe you thawed from is exactly as it was.
+        </p>
+      </article>
+
+      <article class="stratum" data-depth="3">
+        <p class="eyebrow">Saving</p>
+        <h2>Calving is a decision, and it feels like&nbsp;one.</h2>
+        <p class="tight">
+          When the session is worth keeping, you calve it under a name. Iceberg reads the
+          machine, works out which pieces of it your vault already holds, and uploads only what
+          is genuinely new.
+        </p>
+        <div class="calve-demo" id="calve-demo">
+          <div class="calve-demo__bar"><i style="--w:78%"></i><i style="--w:22%" class="new"></i></div>
+          <p class="mono small">
+            <span class="c-ice">■</span> already in your vault &nbsp;
+            <span class="c-warm">■</span> new since the last calve
+          </p>
+          <p class="tight">
+            Adding a compiler to a saved machine costs the compiler — not the machine. That is
+            why a vault holding a dozen environments is measured in hundreds of megabytes rather
+            than dozens of gigabytes.
+          </p>
+        </div>
+      </article>
+
+      <article class="stratum" data-depth="4">
+        <p class="eyebrow">Lineage</p>
+        <h2>Every machine remembers where it came&nbsp;from.</h2>
+        <p class="tight">
+          Floes form a chain. BASE is the factory machine — the clean Alpine install, always
+          there, never editable, never removable. Everything else grows out of it.
+        </p>
+        <ol class="lineage" id="lineage">
+          <li><span class="lineage__dot"></span><b>BASE</b><em>the factory machine</em></li>
+          <li><span class="lineage__dot"></span><b>Rust Dev</b><em>+ rustup, cargo-watch, a shell you like</em></li>
+          <li><span class="lineage__dot"></span><b>Rust + WASM</b><em>+ the wasm32 target and trunk</em></li>
+          <li><span class="lineage__dot"></span><b>Project X</b><em>+ the dependencies, already built</em></li>
+        </ol>
+        <p class="tight">
+          To change BASE, you thaw it, change it, and calve the result under a new name. BASE
+          stays where it is. That is the only way, and it is deliberate.
+        </p>
+      </article>
+
+      <article class="stratum" data-depth="5">
+        <p class="eyebrow">Resource discipline</p>
+        <h2>The machine sleeps when you're only&nbsp;typing.</h2>
+        <p class="tight">
+          Emulating a processor costs a processor. Iceberg does not spend one while you are
+          reading a file. The filesystem lives in the browser rather than inside a disk image,
+          so the editor can open, read and write files with the machine's processor completely
+          parked.
+        </p>
+        <div class="depths">
+          <div class="depth"><span class="pill" data-tone="warm">Running</span><p>You are doing something. Full speed.</p></div>
+          <div class="depth"><span class="pill" data-tone="sleep">Awash</span><p>Run loop parked after 45 seconds. Zero CPU. Wakes instantly; the machine never noticed.</p></div>
+          <div class="depth"><span class="pill" data-tone="sleep">Submerged</span><p>Memory written to local storage and the emulator torn down. Costs nothing. Survives a reload, or a phone taking the tab away.</p></div>
+        </div>
+        <p class="tight">
+          Compile something, and it wakes. The interface always says which of these is true and
+          never pretends a sleeping machine is working.
+        </p>
+      </article>
+
+      <article class="stratum" data-depth="6">
+        <p class="eyebrow">Phone</p>
+        <h2>Built for the day you only have a&nbsp;phone.</h2>
+        <p class="tight">
+          Not a desktop terminal shrunk down. A key rail with the characters a shell actually
+          needs, command history you can reach with a thumb, panes you swipe between, and a
+          layout that survives the keyboard eating half the screen.
+        </p>
+        <div class="phone" aria-hidden="true">
+          <div class="phone__frame">
+            <div class="phone__status"><span class="pill" data-tone="warm">Running</span><span class="mono small">Rust Dev</span></div>
+            <pre class="phone__term mono" id="phone-term"></pre>
+            <div class="phone__keys mono">
+              <span>esc</span><span>tab</span><span>ctrl</span><span>/</span><span>-</span><span>|</span><span>↑</span><span>↓</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="stratum" data-depth="7">
+        <p class="eyebrow">What it is not</p>
+        <h2>The honest part.</h2>
+        <p class="tight">
+          A browser emulating an x86 processor is perhaps ten to thirty times slower than the
+          machine it is running on. Iceberg is a serious environment for editing, scripting,
+          small builds and getting yourself out of trouble. It is not a build farm.
+        </p>
+        <ul class="honest">
+          <li><b>Networking is not free.</b> The guest has no internet unless you attach a network relay you control. Without one, packages come from Iceberg's own courier, which fetches them in the browser and hands them to the machine.</li>
+          <li><b>GitHub has limits.</b> 5 000 API calls an hour, and a repository that should stay under a gigabyte. Calving is designed around both, and tells you when either is close.</li>
+          <li><b>Storage can be evicted.</b> Browsers reclaim space. An uncalved session is only as safe as the browser feels like being, which is why calving is one button and always visible.</li>
+          <li><b>Nothing here sandboxes your code from you.</b> The machine is yours, running your software, in your tab.</li>
+        </ul>
+        <p><a href="docs.html#limits">All of the limits, in detail →</a></p>
+      </article>
+
+      <article class="stratum stratum--end" data-depth="8">
+        <p class="eyebrow">Begin</p>
+        <h2>Thaw the factory machine.</h2>
+        <p class="tight">
+          First run takes a minute: sign in with a GitHub key you create yourself, Iceberg makes
+          you a private repository, and you name your machine. After that it is one tap from
+          anywhere.
+        </p>
+        <div class="hero__cta">
+          <a class="btn btn--cold" href="machine.html">Open the machine</a>
+          <a class="btn" href="docs.html">Read the manual first</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap row">
+    <span class="mono small">ICEBERG · a static page, a private repository, and a computer that lives in both</span>
+    <span class="spacer"></span>
+    <a href="docs.html">Manual</a>
+    <a href="docs.html#security">Security</a>
+    <a href="docs.html#architecture">Architecture</a>
+  </div>
+</footer>
+
+<script type="module" src="js/ui/landing.js"></script>
+</body>
+</html>

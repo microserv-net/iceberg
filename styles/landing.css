@@ -1,0 +1,332 @@
+/* ICEBERG — the landing page.
+ *
+ * One signature: an ice core running down the page. Scrolling drills into it.
+ * Each stratum of the core is a section of the argument, deeper = further in,
+ * which is the same shape as the product's own history. Everything else here
+ * is deliberately quiet so the core is the thing you remember.
+ */
+
+/* ---------- top bar ---------- */
+
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .8rem var(--pad);
+  background: linear-gradient(180deg, rgba(4, 7, 12, .92), rgba(4, 7, 12, 0));
+  backdrop-filter: blur(8px);
+  mask-image: linear-gradient(180deg, #000 60%, transparent);
+}
+.topbar nav { margin-left: auto; display: flex; align-items: center; gap: 1.4rem; }
+.topbar nav a { font-size: .88rem; color: var(--muted); text-decoration: none; }
+.topbar nav a:hover { color: var(--frost); }
+.topbar nav a.btn { color: #021018; }
+
+.wordmark {
+  display: flex; align-items: center; gap: .6rem;
+  color: var(--ice);
+  text-decoration: none;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-stretch: 118%;
+  letter-spacing: .12em;
+  font-size: .92rem;
+}
+.wordmark .mark { filter: drop-shadow(0 0 8px rgba(127, 227, 255, .45)); }
+
+@media (max-width: 620px) {
+  .topbar nav a:not(.btn) { display: none; }
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 34vw);
+  align-items: center;
+  gap: var(--pad);
+  padding: 6rem var(--pad) 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__inner { max-width: 44rem; position: relative; z-index: 2; }
+
+.hero__title {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  font-size: clamp(3.2rem, 11vw, 8.5rem);
+  letter-spacing: -.03em;
+  line-height: .88;
+  margin: 0 0 1.4rem;
+  background: linear-gradient(170deg, #ffffff 0%, var(--ice) 42%, var(--ice-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  white-space: nowrap;
+}
+
+.hero__lede {
+  font-size: clamp(1.02rem, 1.6vw, 1.24rem);
+  color: #c3d8ee;
+  max-width: 40rem;
+  margin: 0 0 2rem;
+}
+
+.hero__cta { display: flex; gap: .8rem; flex-wrap: wrap; }
+.hero__foot { margin-top: 2rem; font-size: .74rem; color: var(--dim); letter-spacing: .04em; }
+
+.hero__berg {
+  position: relative;
+  height: min(76vh, 640px);
+  display: flex;
+  justify-content: center;
+}
+.hero__berg svg { height: 100%; width: 100%; overflow: visible; }
+
+.scroll-hint {
+  position: absolute;
+  bottom: 1.6rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  font-size: .64rem; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--dim);
+  animation: bob 3s var(--ease) infinite;
+}
+@keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 7px); } }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; padding-top: 5rem; }
+  .hero__berg { height: 34vh; order: -1; }
+  .hero__title { font-size: clamp(2.6rem, 17vw, 5rem); }
+}
+
+/* ---------- the core section ---------- */
+
+.depth-section {
+  position: relative;
+  padding: 2rem 0 6rem;
+}
+
+.depth-rail {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 118px;
+  pointer-events: none;
+  z-index: 1;
+}
+.depth-rail svg { width: 100%; height: 100%; display: block; }
+
+.depth-copy {
+  position: relative;
+  z-index: 2;
+  width: var(--gutter);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(5rem, 16vh, 11rem);
+}
+
+/* strata alternate around the core, like samples laid out beside a drill hole */
+.stratum {
+  width: min(46ch, 46%);
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s var(--ease-out), transform .7s var(--ease-out);
+}
+.stratum.in { opacity: 1; transform: none; }
+.stratum:nth-child(even) { align-self: flex-end; }
+
+.stratum h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.7rem);
+  font-stretch: 108%;
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+.stratum p { color: #b6cbe1; }
+.stratum p.emphasis {
+  border-left: 2px solid var(--warm);
+  padding-left: 1rem;
+  color: var(--frost);
+}
+.small { font-size: .78rem; }
+.c-ice { color: var(--ice); }
+.c-warm { color: var(--warm); }
+
+@media (max-width: 900px) {
+  .depth-rail { left: 22px; transform: none; width: 62px; }
+  .depth-copy { width: min(100% - 2rem - 62px, 46rem); margin-left: calc(62px + 1.4rem); margin-right: 1rem; }
+  .stratum, .stratum:nth-child(even) { width: 100%; align-self: stretch; }
+}
+
+/* ---------- ledger ---------- */
+
+.ledger {
+  margin-top: 1.6rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: .92rem;
+}
+.ledger > div {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 1rem;
+  padding: .8rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.ledger span:first-child { color: var(--ice); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; padding-top: .18rem; }
+.ledger span:last-child { color: var(--muted); }
+
+/* ---------- floe vs session ---------- */
+
+.dyad { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.6rem 0; }
+.dyad__side { padding: 1.1rem; }
+.dyad__side p { margin: .55rem 0 0; font-size: .9rem; }
+.dyad__side .mono { color: var(--dim); }
+.dyad__side--cold { box-shadow: inset 0 0 40px -20px var(--ice); }
+.dyad__side--warm { box-shadow: inset 0 0 40px -20px var(--warm); border-color: rgba(255, 162, 76, .22); }
+@media (max-width: 560px) { .dyad { grid-template-columns: 1fr; } }
+
+/* ---------- calve demo ---------- */
+
+.calve-demo { margin: 1.6rem 0; }
+.calve-demo__bar {
+  display: flex;
+  height: 12px;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: rgba(255, 255, 255, .04);
+  margin-bottom: .7rem;
+}
+.calve-demo__bar i {
+  display: block;
+  width: 0;
+  background: var(--ice-deep);
+  transition: width 1.4s var(--ease-out);
+}
+.calve-demo.in .calve-demo__bar i { width: var(--w); }
+.calve-demo__bar i.new { background: var(--warm); }
+
+/* ---------- lineage ---------- */
+
+.lineage { list-style: none; margin: 1.6rem 0; padding: 0; position: relative; }
+.lineage::before {
+  content: '';
+  position: absolute;
+  left: 5px; top: 10px; bottom: 10px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--ice), var(--halide));
+  opacity: .4;
+}
+.lineage li {
+  position: relative;
+  padding: .55rem 0 .55rem 1.8rem;
+  font-size: .95rem;
+}
+.lineage__dot {
+  position: absolute; left: 0; top: 1.05rem;
+  width: 11px; height: 11px;
+  border: 1px solid var(--ice);
+  background: var(--deep);
+  transform: rotate(45deg);
+}
+.lineage li:first-child .lineage__dot { background: var(--ice); box-shadow: 0 0 12px var(--ice); }
+.lineage b { font-weight: 600; }
+.lineage em { color: var(--dim); font-style: normal; display: block; font-size: .82rem; }
+
+/* ---------- sleep depths ---------- */
+
+.depths { display: grid; gap: .7rem; margin: 1.5rem 0; }
+.depth { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; align-items: start; }
+.depth p { margin: 0; font-size: .88rem; }
+@media (max-width: 560px) { .depth { grid-template-columns: 1fr; gap: .3rem; } }
+
+/* ---------- phone ---------- */
+
+.phone { display: flex; justify-content: center; margin: 2rem 0; }
+.phone__frame {
+  width: 250px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--deep);
+  padding: .8rem .6rem .6rem;
+  box-shadow: 0 30px 80px -40px var(--ice), inset 0 0 60px -40px var(--ice);
+}
+.phone__status { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+.phone__status .small { color: var(--dim); }
+.phone__term {
+  height: 190px;
+  margin: 0;
+  padding: .6rem;
+  background: #02050a;
+  border-radius: var(--r-sm);
+  font-size: .62rem;
+  line-height: 1.5;
+  color: #9fe8c0;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+.phone__keys { display: flex; gap: .25rem; margin-top: .5rem; }
+.phone__keys span {
+  flex: 1;
+  text-align: center;
+  font-size: .58rem;
+  padding: .35rem 0;
+  background: rgba(255, 255, 255, .05);
+  border-radius: var(--r-xs);
+  color: var(--muted);
+}
+
+/* ---------- honesty ---------- */
+
+.honest { list-style: none; padding: 0; margin: 1.4rem 0; display: grid; gap: .9rem; }
+.honest li {
+  padding-left: 1.1rem;
+  border-left: 1px solid var(--line);
+  font-size: .92rem;
+  color: var(--muted);
+}
+.honest b { color: var(--frost); font-weight: 600; }
+
+.stratum--end { align-self: center !important; width: min(46ch, 100%); text-align: left; }
+
+/* ---------- footer ---------- */
+
+.foot {
+  border-top: 1px solid var(--line-soft);
+  padding: 2rem 0 max(2rem, env(safe-area-inset-bottom));
+  color: var(--dim);
+}
+.foot a { color: var(--muted); text-decoration: none; font-size: .85rem; }
+.foot a:hover { color: var(--ice); }
+.foot .row { gap: 1.2rem; }
+
+/* ── the berg ─────────────────────────────────────────────────────────
+ * Ice is lit from above and dissolves into the water below. The cap is
+ * near-white and hard-edged; the keel is translucent and unbounded, because
+ * the point of the picture is that you cannot see where it ends.
+ */
+.berg-cap { filter: drop-shadow(0 0 18px rgba(233, 243, 255, .28)); }
+.berg-keel { filter: drop-shadow(0 8px 40px rgba(31, 122, 165, .3)); }
+
+.berg-lbl { color: var(--ice); opacity: .7; }
+.berg-lbl--warm { color: var(--warm); opacity: .85; }
+
+.berg-water { mix-blend-mode: screen; }
+
+@keyframes rise {
+  from { transform: translateY(0); opacity: 0; }
+  12%  { opacity: .7; }
+  88%  { opacity: .5; }
+  to   { transform: translateY(-460px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .berg-bubbles { display: none; }
+}

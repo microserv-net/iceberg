@@ -1,0 +1,123 @@
+/* ICEBERG — the manual.
+ * A reading surface, not a marketing page: one column, generous measure, an
+ * index that tracks where you are.
+ */
+
+.docs-body { padding-top: 4.2rem; }
+
+.docs {
+  width: var(--gutter);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: start;
+  padding-bottom: 6rem;
+}
+
+.docs__index {
+  position: sticky;
+  top: 5rem;
+  max-height: calc(100dvh - 7rem);
+  overflow-y: auto;
+  font-size: .86rem;
+  scrollbar-width: thin;
+}
+.docs__index ol { list-style: none; padding: 0; margin: 0; counter-reset: c; }
+.docs__index li { counter-increment: c; }
+.docs__index a {
+  display: block;
+  padding: .32rem 0 .32rem 2.1rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-left: 1px solid var(--line-soft);
+  position: relative;
+}
+.docs__index a::before {
+  content: counter(c, decimal-leading-zero);
+  position: absolute;
+  left: .7rem;
+  font: 400 .68rem/1.7 var(--f-mono);
+  color: var(--dim);
+}
+.docs__index a:hover { color: var(--frost); }
+.docs__index a.on { color: var(--ice); border-left-color: var(--ice); }
+.docs__index a.on::before { color: var(--ice); }
+
+.docs__body { max-width: 72ch; }
+.docs__body section { padding: 2.6rem 0; border-bottom: 1px solid var(--line-soft); scroll-margin-top: 5rem; }
+.docs__body section:first-child { padding-top: 1rem; }
+.docs__body h2 {
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  font-stretch: 106%;
+  margin-bottom: 1rem;
+}
+.docs__body h3 {
+  font-size: 1.05rem;
+  font-family: var(--f-body);
+  font-weight: 600;
+  color: var(--ice);
+  margin: 1.8rem 0 .5rem;
+}
+.docs__body p { color: #b6cbe1; margin: 0 0 1rem; }
+.docs__body b { color: var(--frost); font-weight: 600; }
+.docs__body code {
+  font: 400 .88em/1 var(--f-mono);
+  background: rgba(127, 227, 255, .09);
+  padding: .15em .4em;
+  border-radius: var(--r-xs);
+  color: var(--ice);
+}
+.docs__body ul, .docs__body ol.numbered { color: #b6cbe1; padding-left: 1.1rem; margin: 0 0 1rem; }
+.docs__body li { margin-bottom: .55rem; }
+
+.callout {
+  border-left: 2px solid var(--warm);
+  padding: .1rem 0 .1rem 1rem;
+  color: var(--warm) !important;
+}
+
+.terms { margin: 0; }
+.terms dt {
+  font: 600 .82rem/1.5 var(--f-mono);
+  color: var(--ice);
+  margin-top: 1rem;
+}
+.terms dd { margin: .15rem 0 0; color: var(--muted); font-size: .93rem; }
+
+.grid { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; font-size: .92rem; }
+.grid th {
+  text-align: left;
+  vertical-align: top;
+  width: 8.5rem;
+  padding: .7rem 1rem .7rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  font: 600 .74rem/1.5 var(--f-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ice);
+}
+.grid--wide th { width: 10rem; }
+.grid td { padding: .7rem 0; border-bottom: 1px solid var(--line-soft); color: var(--muted); }
+
+.diagram {
+  font: 400 .78rem/1.6 var(--f-mono);
+  background: rgba(4, 7, 12, .7);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  color: var(--muted);
+  margin: 1rem 0;
+}
+
+@media (max-width: 860px) {
+  .docs { grid-template-columns: 1fr; }
+  .docs__index {
+    position: static;
+    max-height: none;
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 1rem;
+  }
+  .docs__index ol { columns: 2; column-gap: 1rem; }
+}

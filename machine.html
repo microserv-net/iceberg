@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Iceberg — machine</title>
+<meta name="theme-color" content="#04070c">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9v14L16 30 3 23V9z' fill='none' stroke='%237fe3ff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles/core.css">
+<link rel="stylesheet" href="styles/machine.css">
+</head>
+<body class="machine-body">
+
+<div id="ribbon" class="ribbon" role="banner"></div>
+
+<main id="app" class="app" aria-live="polite">
+  <div class="gate">
+    <div class="panel gate__card">
+      <p class="eyebrow">Starting</p>
+      <h2>Opening Iceberg</h2>
+      <p class="muted">If this stays here, the page could not load its modules. Check the console.</p>
+    </div>
+  </div>
+</main>
+
+<div id="toasts"></div>
+
+<noscript>
+  <div class="gate"><div class="panel gate__card">
+    <h2>JavaScript is the machine</h2>
+    <p class="muted">Iceberg emulates a processor in your browser. There is no version of it that works without scripts.</p>
+  </div></div>
+</noscript>
+
+<script type="module" src="js/ui/app.js"></script>
+</body>
+</html>

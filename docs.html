@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iceberg — the manual</title>
+<meta name="description" content="How Iceberg works: floes, sessions, BASE, calving, the keel, the security model, and every limit that actually binds.">
+<meta name="theme-color" content="#04070c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9v14L16 30 3 23V9z' fill='none' stroke='%237fe3ff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles/core.css">
+<link rel="stylesheet" href="styles/docs.css">
+</head>
+<body class="docs-body grain">
+
+<header class="topbar">
+  <a class="wordmark" href="./"><svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true" class="mark"><path d="M16 2 29 9v14L16 30 3 23V9z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>ICEBERG</span></a>
+  <nav>
+    <a href="./">Home</a>
+    <a class="btn btn--cold btn--sm" href="machine.html">Open the machine</a>
+  </nav>
+</header>
+
+<div class="docs">
+  <nav class="docs__index" id="index" aria-label="Chapters">
+    <p class="eyebrow">The manual</p>
+    <ol>
+      <li><a href="#what">What this is</a></li>
+      <li><a href="#words">The words</a></li>
+      <li><a href="#start">Getting started</a></li>
+      <li><a href="#floes">Floes and sessions</a></li>
+      <li><a href="#base">BASE</a></li>
+      <li><a href="#calving">Calving</a></li>
+      <li><a href="#thawing">Thawing</a></li>
+      <li><a href="#sleep">Sleep and wake</a></li>
+      <li><a href="#editor">The editor</a></li>
+      <li><a href="#mobile">On a phone</a></li>
+      <li><a href="#packages">Software and networking</a></li>
+      <li><a href="#storage">Storage and the keel</a></li>
+      <li><a href="#devices">Several devices</a></li>
+      <li><a href="#security">Security and privacy</a></li>
+      <li><a href="#limits">Limits, honestly</a></li>
+      <li><a href="#trouble">When something breaks</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#faq">Questions</a></li>
+    </ol>
+  </nav>
+
+  <main class="docs__body">
+
+<section id="what">
+<h2>What this is</h2>
+<p>Iceberg is a computer that lives in your GitHub account and runs in your browser.</p>
+<p>Concretely: a real Alpine Linux system — a kernel, processes, a package manager, a filesystem — emulated by WebAssembly inside the page you have open. Its saved states live in a private repository on your own GitHub account. There is no server of ours between you and it. There is no account with us. If this website disappeared tomorrow, your machines would still be sitting in your repository, and any copy of this static site would open them.</p>
+<p>The point is not that Linux can run in a browser; that has been true for years. The point is that <b>a machine can be a thing you save under a name and open somewhere else</b> — the way a document is.</p>
+<p>The name is the mental model. What you are looking at — the running session, the terminal, the file you have open — is the freeboard: the small part above the waterline, temporary and exposed. The mass is underneath, in your repository, and it is the part that persists. Nine tenths of an iceberg is below the line, and so is nine tenths of this.</p>
+</section>
+
+<section id="words">
+<h2>The words</h2>
+<dl class="terms">
+  <dt>Floe</dt><dd>A saved machine. Immutable, named, complete. Internally a commit; you never have to know that.</dd>
+  <dt>Session</dt><dd>A machine you are using right now. Lives in this browser tab and nowhere else.</dd>
+  <dt>Drift</dt><dd>Everything the session has changed since it was thawed. The number in the ribbon.</dd>
+  <dt>Thaw</dt><dd>Turn a floe into a running session.</dd>
+  <dt>Calve</dt><dd>Turn the current session into a new floe.</dd>
+  <dt>Melt</dt><dd>Throw the session's drift away and come back up from the floe.</dd>
+  <dt>Scuttle</dt><dd>Shut the machine down entirely.</dd>
+  <dt>BASE</dt><dd>The factory machine. The first floe, permanent, never editable.</dd>
+  <dt>Vault</dt><dd>Your private repository, <code>iceberg-vault</code>.</dd>
+  <dt>Keel</dt><dd>The deduplicated store of filesystem pieces inside your vault — the mass below the line that every floe is assembled from.</dd>
+  <dt>Awash</dt><dd>Light sleep. The processor is parked but the machine is still in memory.</dd>
+  <dt>Submerged</dt><dd>Deep sleep. The machine is written to local storage and the emulator is torn down.</dd>
+  <dt>Shelf</dt><dd>Where your floes are listed. The first screen after signing in.</dd>
+</dl>
+</section>
+
+<section id="start">
+<h2>Getting started</h2>
+<ol class="numbered">
+  <li><b>Make a key.</b> Iceberg asks for a fine-grained GitHub personal access token scoped to your own account, with three permissions: Administration (read/write, to create the vault once), Contents (read/write, the whole product), Metadata (read, which GitHub adds for you). Nothing else. It is pasted into the page and sent only to <code>api.github.com</code>, only as an <code>Authorization</code> header.</li>
+  <li><b>The vault appears.</b> Iceberg creates <code>iceberg-vault</code> as a <b>private</b> repository and lays down its structure. If it already exists, Iceberg adopts it and repairs anything missing. If a <i>public</i> repository of that name exists, Iceberg refuses to use it and says so — a machine is not something to leave in the open.</li>
+  <li><b>Name your machine.</b> Username, hostname, password, time zone, shell. Iceberg starts a clean Alpine system, applies them, and calves the result as BASE.</li>
+  <li><b>Use it.</b> After the first run it is one tap: open the site, pick a floe, thaw.</li>
+</ol>
+<p class="callout">Once the vault exists, narrow the key on GitHub to <b>only</b> <code>iceberg-vault</code>. On first use it has to cover your whole account because the repository does not exist yet — that is a GitHub constraint, not a Iceberg preference.</p>
+</section>
+
+<section id="floes">
+<h2>Floes and sessions</h2>
+<p>This distinction is the entire product, so it is worth being precise about it.</p>
+<p><b>Nothing that happens inside a running machine is ever written to GitHub on its own.</b> No autosave. No background commit. No sync indicator quietly persisting your work. Install four hundred packages, delete the kernel, fill the disk with junk — as far as your vault is concerned, none of it happened.</p>
+<p>Work exists in the session until you calve it. That is a deliberate cost: it means you must decide. It buys something worth the price — the floe you thawed from is exactly, permanently, as it was, and experimenting has no consequences you did not choose.</p>
+<p>The ribbon always shows how much drift you are carrying, and every route out of the machine — closing the tab, going to the shelf, thawing something else — asks first.</p>
+</section>
+
+<section id="base">
+<h2>BASE</h2>
+<p>BASE is the clean install with your identity applied. It is the first floe, and it is special in three ways: it cannot be renamed, it cannot be forgotten, and nothing you do can modify it.</p>
+<p>To make a "better BASE", thaw BASE, change what you like, and calve under a new name. BASE stays where it is. This is the only way, and it is deliberate: the value of a factory state is that it is <i>always</i> there, including on the day you have broken everything else.</p>
+<pre class="diagram">BASE
+ └─ Rust Dev
+     ├─ Rust + WASM
+     │   └─ Project X
+     └─ Rust + LLVM</pre>
+</section>
+
+<section id="calving">
+<h2>Calving</h2>
+<p><i>Calving</i> is what a glacier does when a new mass breaks off it and floats away under its own name. That is exactly the operation: the session breaks off the floe it came from, becomes independent, and the parent is unchanged.</p>
+<p>When you calve, Iceberg walks the machine's filesystem, works out which pieces your vault already holds, and uploads only what is genuinely new. Then, as a single final act, it writes one commit containing the new manifest and the updated index.</p>
+<p>The order matters. Until that last commit lands, nothing in your vault refers to any of the uploaded pieces — so a calve interrupted by a dead connection leaves the vault exactly as it was, rather than half-applied. GitHub collects the orphaned pieces on its own schedule.</p>
+<p>A calve reports real numbers: pieces uploaded, pieces already held, bytes sent, seconds taken. There is no percentage invented from a timer.</p>
+<h3>Warm floes</h3>
+<p>Optionally, a calve can also capture the machine's memory — every running process, your editor still open, the compile still half-done. Thawing a warm floe resumes rather than boots.</p>
+<p>The costs, plainly: it adds roughly the machine's RAM (512 MB before compression) to that floe, and it ties the floe to the emulator build that made it. Cold floes boot in seconds and are portable across versions. Warm is for the specific case where you want to walk away mid-thought.</p>
+</section>
+
+<section id="thawing">
+<h2>Thawing</h2>
+<p>Thawing resolves a name to a floe, reads its index, and starts a machine against it. Pieces of filesystem are fetched <b>as the guest touches them</b>, not all at once — a boot reads a few hundred files out of tens of thousands, so it starts long before the whole machine has been downloaded.</p>
+<p>The factory image is public and CDN-cached, so most of what a thaw needs is a plain cacheable fetch with no token attached. Only the parts that are <i>yours</i> come out of your private vault.</p>
+<p>If you are heading somewhere without a connection, use <b>Download everything now</b> on a floe first. It pulls every piece into local storage so the machine thaws offline.</p>
+</section>
+
+<section id="sleep">
+<h2>Sleep and wake</h2>
+<p>Emulating a processor costs a processor. Iceberg will not spend one while you are reading a file.</p>
+<table class="grid">
+  <tr><th>Running</th><td>You are doing something. Full speed.</td></tr>
+  <tr><th>Awash</th><td>The run loop is parked, after 45 seconds of quiet. Zero CPU. Memory still held, so waking is instantaneous and the guest never noticed a gap.</td></tr>
+  <tr><th>Submerged</th><td>Memory is written to local storage and the emulator is torn down. Costs nothing at all. Survives a reload, a crash, or a phone deciding to take the tab away. Waking takes a moment.</td></tr>
+</table>
+<p>Anything that needs the machine wakes it: running a command, compiling, opening the terminal. Opening, reading, editing and saving files do not, because the filesystem lives on the browser's side rather than inside a disk image.</p>
+<p>The state is always shown, and a sleeping machine is never described as doing work.</p>
+</section>
+
+<section id="editor">
+<h2>The editor</h2>
+<p>The editor is not a program installed inside Alpine. It is browser-side, reading and writing the machine's filesystem directly. That is why it keeps working with the processor parked, and why opening a file wakes nothing.</p>
+<p>It is CodeMirror 6: it works properly on touch, it is a fraction of the payload of the alternatives on a phone connection, and it does not need a worker per language just to open a file.</p>
+<p class="callout">One honest caveat. A file written by the editor while the machine is asleep may already be in the guest's page cache. Iceberg drops the guest's caches when it wakes after external edits, but if you write a file from the editor and read it in the same instant from a shell that already had it open, trust the shell's copy and re-open.</p>
+<p>Files that have drifted since the thaw are marked warm in the file tree, so you can see what a calve would capture without opening a dialog to find out.</p>
+</section>
+
+<section id="mobile">
+<h2>On a phone</h2>
+<p>The phone case is a design target, not a responsive afterthought.</p>
+<ul>
+  <li><b>A key rail</b> above the keyboard with the characters a shell needs and a phone lacks: Esc, Tab, a sticky Ctrl, pipe, tilde, slash, arrows.</li>
+  <li><b>A history strip</b> of your recent commands as tappable chips, because retyping a long command on glass is the actual reason people give up.</li>
+  <li><b>Three panes</b> — files, terminal, editor — one at a time, switched from a bar at the bottom within thumb reach.</li>
+  <li><b>Keyboard-aware layout</b> using the visual viewport, so the terminal resizes to what is left rather than hiding behind the keyboard.</li>
+  <li><b>Submerged on hide.</b> Mobile browsers reclaim background tabs aggressively. When the tab goes away, the machine is written to local storage, and it is still there when you come back.</li>
+</ul>
+<p>What a phone cannot change: an emulated processor on a phone is slow, and a phone will run its battery down doing it. Editing, scripting, small builds and getting yourself out of trouble are realistic. A full Rust rebuild is not.</p>
+</section>
+
+<section id="packages">
+<h2>Software and networking</h2>
+<p>This is the part most likely to surprise you, so it is stated up front rather than discovered.</p>
+<p><b>The emulated machine has no internet connection by default.</b> A browser cannot open a raw TCP socket; the guest's network card has nothing to plug into. This is a property of browsers, not a gap in Iceberg.</p>
+<p>There are two honest ways to have software:</p>
+<h3>The courier (no infrastructure)</h3>
+<p>Iceberg can fetch an Alpine package <i>in the browser</i> and hand the file to the machine, then install it from disk. This works without any server, for any package reachable from a mirror that permits cross-origin reads. Dependencies are resolved from the index the same way.</p>
+<h3>A network relay (yours)</h3>
+<p>v86 can attach its network card to a WebSocket relay, which gives the guest real connectivity — <code>apk add</code>, <code>git clone</code>, <code>curl</code>, all of it. Iceberg lets you point at a relay you run or trust. It ships none, and defaults to none, because a relay sees your machine's traffic and that is not a thing to hand a stranger by default.</p>
+<p>Either way, once software is installed and calved into a floe, it is <i>in</i> the floe. Thawing it needs no network beyond your vault.</p>
+</section>
+
+<section id="storage">
+<h2>Storage and the keel</h2>
+<p>A machine is not stored as a disk image. If it were, every floe would cost the whole machine again, and a vault with a dozen environments would be tens of gigabytes.</p>
+<p>Instead, the filesystem is treated as one long byte stream — every file's contents, in path order — and cut into pieces at boundaries chosen by the <i>content</i> rather than by position. Each piece is stored once, under its own hash. A floe is a list of hashes plus an index that says which file lives where.</p>
+<p>The consequence: two floes that share a compiler share its pieces exactly. Adding a compiler to a saved machine costs the compiler, not the machine.</p>
+<p>Content-defined boundaries are what make this hold up. Insert a file near the front of the stream and every byte after it shifts; fixed-size blocks would then differ all the way down. Content-defined boundaries re-synchronise within about one piece.</p>
+<h3>What this means for you</h3>
+<ul>
+  <li>Your first calve after installing a toolchain is the expensive one. Subsequent calves of the same machine are usually a few megabytes.</li>
+  <li>The factory image is <b>not</b> copied into your vault. It is public, immutable, CDN-served, and pinned by hash. Your vault holds what <i>you</i> made, plus a reference.</li>
+  <li>Forgetting a floe removes it from the shelf. Its pieces stay in the repository until GitHub next collects what nothing references. Iceberg cannot force that and does not claim to.</li>
+  <li>Iceberg warns above 800 MB and refuses to calve above 2 GB. GitHub's own guidance is to stay under 1 GB per repository.</li>
+</ul>
+</section>
+
+<section id="devices">
+<h2>Several devices</h2>
+<p>Floes sync because they are in a Git repository; there is nothing else to sync. Calve on the laptop, thaw on the phone.</p>
+<p>Sessions do not sync, and cannot: a session is a running processor in one browser tab. Two tabs are two machines.</p>
+<p>If another device calved something while you were working, Iceberg notices before it writes — the vault's ref update is a compare-and-swap, so a lost race is reported rather than resolved by overwriting. Both floes land; a name collision is refused with the reason, and nothing you did is lost.</p>
+<p><b>Never</b> is a saved floe overwritten silently.</p>
+</section>
+
+<section id="security">
+<h2>Security and privacy</h2>
+<h3>What Iceberg can reach</h3>
+<p>The key you make is fine-grained and, after first use, scoped to one repository. Iceberg cannot read your other repositories, cannot touch secrets, cannot run Actions, cannot open pull requests. The permission table is shown before you create the key, and the list of things deliberately <i>not</i> requested is shown next to it.</p>
+<h3>Where the key lives</h3>
+<p>In <code>sessionStorage</code>, which dies with the tab. "Remember on this device" wraps it with AES-GCM under a key derived from your passphrase (PBKDF2, 310 000 rounds); the raw token never touches persistent storage. It is sent only to <code>api.github.com</code>, only as a header — the API client asserts the target origin before every single request and throws otherwise.</p>
+<h3>The guest never gets your credentials</h3>
+<p>This one is structural. The emulated machine loads filesystem pieces through a virtual origin that does not exist on the internet: requests to it never reach the network and are answered by Iceberg, on this side of the boundary. The guest cannot see the handler, cannot reach past it, and never possesses a GitHub token. Software you install inside the machine cannot use your GitHub access, because it does not have any.</p>
+<h3>What is not protected</h3>
+<ul>
+  <li><b>The machine is not a sandbox from you.</b> It is your computer running your software in your tab. v86 is an emulator, and its own security model is that of ordinary browser JavaScript — code in the guest is confined to the emulator, but the emulator is not a hardened boundary and has never claimed to be. Do not run something you would not run on your laptop.</li>
+  <li><b>Your vault is private, not encrypted.</b> Anything you put in a floe — passwords in dotfiles, SSH keys, tokens — sits in a private GitHub repository in the clear, readable by anyone with access to your GitHub account. Treat it exactly as you would treat a private repo, which is to say: do not put secrets in it.</li>
+  <li><b>Local storage is not private on a shared computer.</b> Submerged images and cached pieces sit in the browser's storage for that origin. Sign out clears the key; it does not scrub the cache. On a machine that is not yours, use a private window and scuttle when you are done.</li>
+</ul>
+</section>
+
+<section id="limits">
+<h2>Limits, honestly</h2>
+<table class="grid grid--wide">
+  <tr><th>Speed</th><td>An emulated x86 in WebAssembly runs perhaps 10–30× slower than the host, single core. Real for editing, scripting, small builds. Not a build farm.</td></tr>
+  <tr><th>Memory</th><td>The guest gets 512 MB by default; the browser tab holds that plus the filesystem. A tab over roughly 2 GB is at risk on any device, and on iOS considerably less.</td></tr>
+  <tr><th>Architecture</th><td>32-bit x86. Software with no <code>x86</code> Alpine package will not run.</td></tr>
+  <tr><th>Networking</th><td>None in the guest without a relay you supply. See <a href="#packages">Software and networking</a>.</td></tr>
+  <tr><th>GitHub API</th><td>5 000 requests an hour. A first calve of a large toolchain can use several hundred. Iceberg tracks the budget, slows down as it thins, and refuses to start something it cannot finish rather than dying halfway.</td></tr>
+  <tr><th>Repository size</th><td>GitHub is comfortable to about 1 GB and pushes back well before 5 GB. Iceberg warns at 800 MB.</td></tr>
+  <tr><th>Single files</th><td>Files over 48 MB inside the machine are refused at calve time, by name, rather than silently dropped.</td></tr>
+  <tr><th>Local storage</th><td>Browsers evict. Iceberg asks for persistent storage and tells you if the browser declines. An uncalved session is only as safe as the browser feels like being.</td></tr>
+  <tr><th>Background tabs</th><td>Are throttled and eventually discarded, especially on mobile. Submerged exists for exactly this.</td></tr>
+  <tr><th>Warm floes</th><td>Tied to the emulator build that made them. If the emulator is upgraded, warm resume may be refused; cold floes are unaffected.</td></tr>
+</table>
+</section>
+
+<section id="trouble">
+<h2>When something breaks</h2>
+<dl class="terms">
+  <dt>The calve failed halfway</dt><dd>Nothing was applied. Uploaded pieces are orphans and GitHub collects them; your shelf is untouched. Try again — the second attempt is faster, because the pieces that did upload are already there.</dd>
+  <dt>"A piece of this floe is missing"</dt><dd>The index refers to something the vault does not hold, which means a calve did not finish and its commit landed anyway (very rare, or the result of hand-editing). Other floes are unaffected. Forget the damaged one.</dd>
+  <dt>The shelf is empty but the vault has floes</dt><dd>The index file is damaged. The manifests are the record; the index is a convenience. Rebuilding regenerates it from them.</dd>
+  <dt>GitHub says the key is missing a permission</dt><dd>The message names the exact permission from GitHub's own response header. The one people forget is Administration, needed once to create the vault.</dd>
+  <dt>The machine will not start</dt><dd>Almost always the emulator failing to load its WebAssembly — an extension blocking it, or a hosting setup serving the wrong content type. The console will say. On <code>file://</code> nothing works at all, because Web Crypto is withheld outside a secure context.</dd>
+  <dt>The tab was killed with uncalved work</dt><dd>Check the shelf on reload: if submerged was reached, the whole machine comes back. Failing that, Iceberg spills changed small files to local storage every minute, which is a way to recover a file, not a backup of the machine.</dd>
+</dl>
+</section>
+
+<section id="architecture">
+<h2>Architecture</h2>
+<p>For the technically curious. The full document, including the parts that are genuinely impossible from a static site and what is done instead, is <a href="https://github.com/microserv-net/iceberg-web/blob/main/ARCHITECTURE.md"><code>ARCHITECTURE.md</code></a> in the source repository.</p>
+<pre class="diagram">  your browser                          github
+  ────────────                          ──────
+  v86  ── 9p filesystem ──┐
+   │                      │
+  xterm / CodeMirror      │   virtual origin (no network)
+   │                      ▼
+  session  ──drift──▶  snapshot ──cut──▶ keel ──blobs──▶ iceberg-vault
+                                                              (private)
+                          ▲
+  factory image ──────────┘  public, CDN, pinned by hash</pre>
+<ul>
+  <li><b>Two repositories.</b> The site is static and public. Each user's machine lives in their own private repository. There is no shared database, and nothing of yours passes through anything of ours.</li>
+  <li><b>One commit per calve.</b> Chunks are uploaded as blobs first; a single commit then introduces the manifest and the index together, so a partial upload is invisible.</li>
+  <li><b>Compare-and-swap refs.</b> Two devices calving at once produce two commits, never a lost one.</li>
+  <li><b>Content-defined chunking.</b> A Gear rolling hash with a 1 MB average, 256 KB floor, 4 MB ceiling, over a path-ordered byte stream.</li>
+  <li><b>Lazy filesystem loading.</b> The emulator asks for a file by content hash; Iceberg answers from the keel. A boot fetches what a boot reads.</li>
+  <li><b>One optional relay.</b> "Sign in with GitHub" needs a stateless shim because GitHub's token endpoints send no CORS headers and require a client secret. It is about fifty lines, stores nothing, and deployments may simply not run it — the key path needs no infrastructure at all.</li>
+</ul>
+</section>
+
+<section id="faq">
+<h2>Questions</h2>
+<dl class="terms">
+  <dt>Is this a VM in the cloud?</dt><dd>No. There is no machine anywhere but your browser. Close the tab and the computation stops.</dd>
+  <dt>Can I run Docker in it?</dt><dd>No. 32-bit x86, no nested virtualisation, no network by default.</dd>
+  <dt>Does it work offline?</dt><dd>A thawed machine keeps running with no connection. Calving needs GitHub. Download a floe in advance to thaw it offline.</dd>
+  <dt>Will my code end up on your servers?</dt><dd>We have no servers. The site is a static page; the only thing it talks to is GitHub, with your key.</dd>
+  <dt>What happens if you shut this down?</dt><dd>Your vault is a normal Git repository you own. Any copy of this static site opens it, including one you host yourself. The formats are documented so a third tool could read it too.</dd>
+  <dt>Why not just use a devcontainer?</dt><dd>If you have a machine that can run one, do. Iceberg is for the times you do not, and for keeping the machine itself rather than a recipe that rebuilds something like it.</dd>
+  <dt>Can I make BASE different?</dt><dd>Not in place, deliberately. Thaw it, change it, calve under a new name, and thaw <i>that</i> from then on.</dd>
+  <dt>Is it a sandbox?</dt><dd>No.</dd>
+</dl>
+</section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="wrap row">
+    <span class="mono small">ICEBERG</span>
+    <span class="spacer"></span>
+    <a href="./">Home</a>
+    <a href="machine.html">Machine</a>
+  </div>
+</footer>
+
+<script type="module" src="js/ui/docs.js"></script>
+</body>
+</html>
