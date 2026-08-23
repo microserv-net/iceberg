@@ -111,12 +111,15 @@ export class Machine extends Emitter {
 
     const V86 = await this.#loadV86();
     stage('assembling', { label: 'Assembling the machine' });
+    const basefsUrl = URL.createObjectURL(new Blob([
+      JSON.stringify(source.baseFS),
+    ], { type: 'application/json' }));
 
     const options = {
       wasm_path: MACHINE.wasmPath,
       memory_size: MACHINE.memoryMB * 1024 * 1024,
       vga_memory_size: MACHINE.vgaMemoryMB * 1024 * 1024,
-      filesystem: { basefs: source.baseFS, baseurl: `${VIRTUAL_ORIGIN}/f/` },
+      filesystem: { basefs: basefsUrl, baseurl: `${VIRTUAL_ORIGIN}/f/` },
       bzimage_initrd_from_filesystem: true,
       cmdline: this.#cmdline(),
       autostart: false,
@@ -136,9 +139,13 @@ export class Machine extends Emitter {
     this.emulator.add_listener('serial0-output-byte', (b) => this.#serial(b));
     this.emulator.add_listener('emulator-stopped', () => this.emit('stopped'));
 
-    await Promise.race([ready.promise, sleep(30_000).then(() => {
-      throw new Error('The machine did not come up. The emulator may have failed to load its WebAssembly.');
-    })]);
+    try {
+      await Promise.race([ready.promise, sleep(30_000).then(() => {
+        throw new Error('The machine did not come up. The emulator may have failed to load its WebAssembly.');
+      })]);
+    } finally {
+      URL.revokeObjectURL(basefsUrl);
+    }
 
     try { this.fs = new GuestFS(this.emulator); } catch (e) { this.emit('fault', { message: e.message }); }
 
