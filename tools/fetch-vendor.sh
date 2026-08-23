@@ -5,23 +5,22 @@
 # its own release cadence, and pinning a copy here would rot. This fetches a
 # release and puts the two files Iceberg needs where config.js expects them.
 #
-#   vendor/libv86.mjs   the emulator, as an ES module
+#   vendor/libv86.js    the emulator, as a classic script
 #   vendor/v86.wasm     its WebAssembly
 #
 # Pin V86_REF to a tag you have actually tested. A warm floe is tied to the
 # emulator build that made it, so changing this is not a cosmetic upgrade.
 
 set -euo pipefail
-V86_REF="${V86_REF:-v0.5.0}"
+V86_BASE_URL="${V86_BASE_URL:-https://copy.sh/v86/build}"
 DEST="$(cd "$(dirname "$0")/.." && pwd)/vendor"
 mkdir -p "$DEST"
 
-base="https://github.com/copy/v86/releases/download/${V86_REF}"
-echo "Fetching v86 ${V86_REF} into ${DEST}"
+echo "Fetching v86 from ${V86_BASE_URL} into ${DEST}"
 
-curl -fL --retry 3 -o "$DEST/libv86.mjs" "${base}/libv86.mjs" \
-  || curl -fL --retry 3 -o "$DEST/libv86.js" "${base}/libv86.js"
-curl -fL --retry 3 -o "$DEST/v86.wasm" "${base}/v86.wasm"
+curl -fL --retry 3 -o "$DEST/libv86.mjs" "${V86_BASE_URL}/libv86.mjs" \
+  || curl -fL --retry 3 -o "$DEST/libv86.js" "${V86_BASE_URL}/libv86.js"
+curl -fL --retry 3 -o "$DEST/v86.wasm" "${V86_BASE_URL}/v86.wasm"
 
 cat > "$DEST/README.md" <<'NOTE'
 Files here are fetched by tools/fetch-vendor.sh and are not part of Iceberg.
