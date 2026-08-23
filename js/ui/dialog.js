@@ -9,6 +9,8 @@ import { el, $ } from '../util.js';
 function host() {
   let h = document.getElementById('toasts');
   if (!h) { h = el('div', { id: 'toasts' }); document.body.append(h); }
+  const openDialog = document.querySelector('dialog[open]');
+  if (openDialog && h.parentElement !== openDialog) openDialog.append(h);
   return h;
 }
 

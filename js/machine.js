@@ -159,23 +159,24 @@ export class Machine extends Emitter {
       stage('booting', { label: 'Starting Alpine' });
       this.#set('booting');
       this.emulator.run();
-      this.#waitForPrompt().then((ok) => {
+      this.#bootPromise = this.#waitForPrompt().then((ok) => {
         if (!ok) {
           const output = this.serialBuffer.trim();
+          const message = output
+            ? `Alpine did not reach a shell. Last boot output:\n${output}`
+            : 'Alpine did not reach a shell and produced no serial output. Check the kernel and initramfs in the base image.';
           this.#set('failed', { reason: 'shell-timeout' });
-          this.emit('fault', {
-            message: output
-              ? `Alpine did not reach a shell. Last boot output:\n${output}`
-              : 'Alpine did not reach a shell and produced no serial output. Check the kernel and initramfs in the base image.',
-          });
-          return;
+          this.emit('fault', { message });
+          throw new Error(message);
         }
         if (this.state === 'booting') this.#set('running');
         this.emit('booted', { ms: Date.now() - this.bootedAt });
+        return true;
       }).catch((e) => {
-        this.#set('failed', { reason: 'shell-error' });
-        this.emit('fault', { message: `The shell check failed: ${e.message}` });
+        if (this.state !== 'failed') this.#set('failed', { reason: 'shell-error' });
+        throw e;
       });
+      this.#bootPromise.catch(() => {});
     }
 
     this.#armSleep();
@@ -224,6 +225,7 @@ export class Machine extends Emitter {
   async run(command, { timeout = 120_000 } = {}) {
     if (!this.emulator) throw new Error('The machine is not running.');
     await this.wake();
+    if (this.state === 'booting') await this.#bootPromise;
     const marker = `__berg_${Math.random().toString(36).slice(2, 8)}__`;
     let out = '';
     const off = this.on('serial', (ch) => { out += ch; });
