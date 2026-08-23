@@ -47,7 +47,13 @@ export class GitHub {
     if (this.#token) headers.Authorization = `Bearer ${this.#token}`;
     if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
 
-    const cacheKey = opts.etagKey ?? (opts.method ? null : url);
+    // Conditional requests are OPT-IN. They must be, because a 304 carries no
+    // body: a caller that is not expecting one reads `data` as null and
+    // concludes the resource does not exist. getRef doing that turns a healthy
+    // branch into "no branch", which turns the next commit into a root commit,
+    // which GitHub rejects as a non-fast-forward — forever.
+    // Only callers that handle `notModified` themselves pass an etagKey.
+    const cacheKey = typeof opts.etagKey === 'string' ? opts.etagKey : null;
     if (cacheKey && this.#etags.has(cacheKey)) headers['If-None-Match'] = this.#etags.get(cacheKey);
 
     return retry(async () => {
@@ -68,7 +74,16 @@ export class GitHub {
 
       this.#absorbRate(res);
 
-      if (res.status === 304) return { notModified: true, status: 304, data: null };
+      if (res.status === 304) {
+        if (!cacheKey) {
+          // Should be unreachable: we only send If-None-Match when asked to.
+          // If a proxy manufactures one anyway, retry unconditionally rather
+          // than hand the caller an empty body it will misread.
+          this.#etags.delete(url);
+          throw new GitHubError('Unexpected 304 from GitHub; retrying without cache.', { status: 304 });
+        }
+        return { notModified: true, status: 304, data: null };
+      }
 
       const etag = res.headers.get('etag');
       if (cacheKey && etag && res.ok) this.#etags.set(cacheKey, etag);
@@ -136,8 +151,12 @@ export class GitHub {
     } else if (res.status === 404) {
       err.fatal = true;
       err.notFound = true;
-    } else if (res.status >= 400 && res.status < 500 && res.status !== 409 && res.status !== 422) {
+    } else if (res.status >= 400 && res.status < 500) {
+      // 409/422 are conflicts, not transport failures. Blind retries cannot fix
+      // them and turn one honest error into a burst of identical ones; the
+      // caller re-reads state and rebuilds instead.
       err.fatal = true;
+      if (res.status === 409 || res.status === 422) err.conflict = true;
     }
     return err;
   }

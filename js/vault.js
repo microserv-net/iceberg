@@ -280,6 +280,7 @@ export async function commit({ message, files = [], blobs = [], deletes = [], tr
     const c = await gh.createCommit(repo.owner, repo.name, {
       message, tree: treeSha, parents: parent ? [parent] : [],
     });
+    if (!c?.sha) throw new GitHubError('GitHub accepted the commit but returned no id.', { status: 0 });
 
     try {
       const ref = `heads/${repo.branch}`;
@@ -295,7 +296,18 @@ export async function commit({ message, files = [], blobs = [], deletes = [], tr
       return { head: c.sha, tree: treeSha };
     } catch (e) {
       // 422 covers three different situations and they need three answers.
-      const why = String(e.body?.message ?? e.message ?? '');
+      const why = [e.body?.message, ...(e.body?.errors ?? []).map((x) => x.message).filter(Boolean)]
+        .filter(Boolean).join('; ') || String(e.message ?? '');
+      console.error(`iceberg: ref update failed on heads/${repo.branch}`, e.status, e.body ?? e.message);
+
+      // The commit may already be the tip — a retry after a response we never
+      // saw. That is a success, not a conflict.
+      const now = await gh.getRef(repo.owner, repo.name, `heads/${repo.branch}`).catch(() => null);
+      if (now?.object?.sha === c.sha) {
+        repo.head = c.sha; repo.tree = treeSha;
+        vault.emit('commit', { sha: c.sha, message });
+        return { head: c.sha, tree: treeSha };
+      }
       const missing = /does not exist|Not Found/i.test(why);
       const exists = /already exists/i.test(why);
       const raced = e.status === 409 || /fast forward/i.test(why);
