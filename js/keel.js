@@ -99,14 +99,38 @@ export async function getChunk(hash, { imageId = null, signal } = {}) {
 
   const job = (async () => {
     let raw = null;
+    let publicUrl = null;
+    let publicError = null;
 
     // 2. public base image — no token, cacheable by the browser and the CDN
     if (imageId) {
       const url = `${IMAGES.baseUrl}${imageId}/${chunkPath(hash)}`;
+      publicUrl = url;
       try {
         const res = await fetch(url, { signal, cache: 'force-cache' });
         if (res.ok) raw = new Uint8Array(await res.arrayBuffer());
-      } catch { /* fall through to the vault */ }
+        else publicError = `HTTP ${res.status}`;
+      } catch (e) { publicError = e.message; }
+    }
+
+    const decode = async (stored) => {
+      const bytes = KEEL.compress ? await inflate(stored) : stored;
+      const actual = await sha256(bytes);
+      if (actual !== hash) throw new Error(`decoded hash is ${actual.slice(0, 12)}…`);
+      return bytes;
+    };
+
+    // A CDN can return a 200 HTML/LFS body for a missing or unpublished asset.
+    // Reject it here so a vault copy can still satisfy the request.
+    if (raw) {
+      try {
+        const bytes = await decode(raw);
+        idb.set('cache', `c:${hash}`, bytes).catch(() => {});
+        return bytes;
+      } catch (e) {
+        publicError = e.message;
+        raw = null;
+      }
     }
 
     // 3. the vault
@@ -128,7 +152,18 @@ export async function getChunk(hash, { imageId = null, signal } = {}) {
       raw = await gh.getBlobRaw(repo.owner, repo.name, sha, signal);
     }
 
-    const bytes = KEEL.compress ? await inflate(raw) : raw;
+    let bytes;
+    try {
+      bytes = await decode(raw);
+    } catch (e) {
+      const where = publicUrl ? ` from ${publicUrl}` : '';
+      const detail = publicError ? ` Public response: ${publicError}.` : '';
+      throw new Error(
+        `The chunk ${hash.slice(0, 12)}… is not valid ${KEEL.compress ? 'raw-DEFLATE' : 'binary'} data${where}.` +
+        `${detail} The published image may be incomplete or served as an HTML/LFS response. ` +
+        `Original error: ${e.message}`
+      );
+    }
     idb.set('cache', `c:${hash}`, bytes).catch(() => {});
     return bytes;
   })();
