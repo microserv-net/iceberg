@@ -159,9 +159,22 @@ export class Machine extends Emitter {
       stage('booting', { label: 'Starting Alpine' });
       this.#set('booting');
       this.emulator.run();
-      this.#waitForPrompt().then(() => {
+      this.#waitForPrompt().then((ok) => {
+        if (!ok) {
+          const output = this.serialBuffer.trim();
+          this.#set('failed', { reason: 'shell-timeout' });
+          this.emit('fault', {
+            message: output
+              ? `Alpine did not reach a shell. Last boot output:\n${output}`
+              : 'Alpine did not reach a shell and produced no serial output. Check the kernel and initramfs in the base image.',
+          });
+          return;
+        }
         if (this.state === 'booting') this.#set('running');
         this.emit('booted', { ms: Date.now() - this.bootedAt });
+      }).catch((e) => {
+        this.#set('failed', { reason: 'shell-error' });
+        this.emit('fault', { message: `The shell check failed: ${e.message}` });
       });
     }
 
